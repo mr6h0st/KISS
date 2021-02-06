@@ -2,6 +2,7 @@ package fr.neamar.kiss.result;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -144,7 +145,6 @@ public class ShortcutsResult extends Result {
         Drawable shortcutDrawable = null;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             final LauncherApps launcherApps = (LauncherApps) context.getSystemService(Context.LAUNCHER_APPS_SERVICE);
-            UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
             assert launcherApps != null;
 
             if (launcherApps.hasShortcutHostPermission() && !TextUtils.isEmpty(shortcutPojo.packageName)) {
@@ -157,11 +157,13 @@ public class ShortcutsResult extends Result {
 
                 // Find the correct UserHandle, and retrieve the icon.
                 for (UserHandle userHandle : userHandles) {
-                    if (userManager.isUserRunning(userHandle)) {
+                    try {
                         List<ShortcutInfo> shortcuts = launcherApps.getShortcuts(query, userHandle);
                         if (shortcuts != null && shortcuts.size() > 0) {
                             shortcutDrawable = launcherApps.getShortcutIconDrawable(shortcuts.get(0), 0);
                         }
+                    } catch (IllegalStateException ignored) {
+                        // do nothing if user is locked or not running
                     }
                 }
             }
@@ -217,7 +219,11 @@ public class ShortcutsResult extends Result {
                 if (userManager.isUserRunning(userHandle)) {
                     List<ShortcutInfo> shortcuts = launcherApps.getShortcuts(query, userHandle);
                     if (shortcuts != null && shortcuts.size() > 0 && shortcuts.get(0).isEnabled()) {
-                        launcherApps.startShortcut(shortcuts.get(0), v.getClipBounds(), null);
+                        try {
+                            launcherApps.startShortcut(shortcuts.get(0), v.getClipBounds(), null);
+                        } catch(ActivityNotFoundException e) {
+                            Toast.makeText(context, R.string.application_not_found, Toast.LENGTH_LONG).show();
+                        }
                         return;
                     }
                 }

@@ -21,6 +21,16 @@ or alternatively using `brew install fastlane`
 fastlane android beta
 ```
 Upload to beta channel
+### android prod
+```
+fastlane android prod
+```
+
+### android sync
+```
+fastlane android sync
+```
+
 
 ----
 

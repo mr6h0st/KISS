@@ -461,6 +461,8 @@ public class SettingsActivity extends PreferenceActivity implements
                     dh.removeFromFavorites(pojo.id);
             for (String tagName : favTags)
                 dh.addToFavorites(TagsProvider.generateUniqueId(tagName));
+        } else if ("exclude-favorites-apps".equals(key)) {
+            KissApplication.getApplication(this).getDataHandler().getAppProvider().reload();
         }
 
         if (settingsRequiringRestart.contains(key) || settingsRequiringRestartForSettingsActivity.contains(key)) {
@@ -556,11 +558,17 @@ public class SettingsActivity extends PreferenceActivity implements
         selectListPreference.setEntries(tagArray);
         selectListPreference.setEntryValues(tagArray);
         selectListPreference.setValues(menuTags);
+
+        // Enable the preference
+        runOnUiThread(() -> {
+            selectListPreference.setEnabled(true);
+            selectListPreference.setTitle(R.string.pref_toggle_tags_select);
+        });
     }
 
     private void addTagsFavInformation() {
         Set<String> favTags = getFavTags(getApplicationContext());
-        MultiSelectListPreference selectListPreference = (MultiSelectListPreference) findPreference("pref-fav-tags-list");
+        final MultiSelectListPreference selectListPreference = (MultiSelectListPreference) findPreference("pref-fav-tags-list");
 
         Set<String> tagsSet = KissApplication.getApplication(this)
                 .getDataHandler()
@@ -575,5 +583,11 @@ public class SettingsActivity extends PreferenceActivity implements
         selectListPreference.setEntries(tagArray);
         selectListPreference.setEntryValues(tagArray);
         selectListPreference.setValues(favTags);
+
+        // Enable the preference
+        runOnUiThread(() -> {
+            selectListPreference.setEnabled(true);
+            selectListPreference.setTitle(R.string.pref_fav_tags_select);
+        });
     }
 }

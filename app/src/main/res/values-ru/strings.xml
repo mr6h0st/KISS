@@ -76,7 +76,7 @@
     <string name="favorites_erased">Избранное сброшено</string>
     <string name="menu_favorites_add">В избранное</string>
     <string name="toast_favorites_added">%s добавлено в избранное</string>
-    <string name="icons_pack_name">Значки (ADW.Launcher)</string>
+    <string name="icons_pack_name">Системные значки (ADW.Launcher)</string>
     <string name="icons_pack_default_name">Системные значки</string>
     <string name="settings_nfc">Радиосвязь NFC</string>
     <string name="settings_tethering">Режим модема и точка доступа</string>
@@ -93,7 +93,7 @@
     <string name="history_mode_desc">Способ заполнения истории</string>
     <string name="menu_shortcut_remove">Убрать ярлык</string>
     <string name="enable_favorites_bar">Избранное над поиском</string>
-    <string name="exclude_favorites">Исключить избранные из истории</string>
+    <string name="exclude_favorites_history">Исключить избранные из истории</string>
     <string name="favorites_hide">Скрыть избранное</string>
     <string name="settings_storage">Накопитель</string>
     <string name="settings_dev">Для разработчиков</string>
@@ -255,4 +255,13 @@
     <string name="theme_wallpaper">Обои</string>
     <string name="gesture_right_name">Действие жеста вправо</string>
     <string name="gesture_left_name">Действие жеста влево</string>
+    <string name="custom_name_set_default">Имя по умолчанию</string>
+    <string name="custom_name_rename">Переименовать</string>
+    <string name="custom_icon_preview">Предпросмотр</string>
+    <string name="default_icon">Иконка по умолчанию</string>
+    <string name="custom_icon_hint">Сортировать по имени</string>
+    <string name="app_rename_confirmation">Имя приложения переименовано на %s</string>
+    <string name="menu_custom_icon">Пользовательский значок</string>
+    <string name="menu_app_rename">Переименовать</string>
+    <string name="custom_icon_application">приложение</string>
 </resources>

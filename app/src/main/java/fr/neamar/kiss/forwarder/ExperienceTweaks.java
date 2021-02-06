@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.ImageView;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -164,8 +163,14 @@ class ExperienceTweaks extends Forwarder {
                     case "display-notifications":
                         displayNotificationDrawer();
                         break;
+                    case "display-quicksettings":
+                        displayQuickSettings();
+                        break;
                     case "display-keyboard":
                         mainActivity.showKeyboard();
+                        break;
+                    case "hide-keyboard":
+                        mainActivity.hideKeyboard();
                         break;
                     case "display-apps":
                         if (mainActivity.isViewingSearchResults()) {
@@ -213,7 +218,7 @@ class ExperienceTweaks extends Forwarder {
         // Activity manifest specifies stateAlwaysHidden as windowSoftInputMode
         // so the keyboard will be hidden by default
         // we may want to display it if the setting is set
-        if (isKeyboardOnStartEnabled()) {
+        if (shouldShowKeyboard()) {
             // Display keyboard
             mainActivity.showKeyboard();
 
@@ -247,19 +252,11 @@ class ExperienceTweaks extends Forwarder {
     }
 
     void onWindowFocusChanged(boolean hasFocus) {
-        if (hasFocus && isKeyboardOnStartEnabled()) {
-            mainActivity.showKeyboard();
-        }
     }
 
     void onDisplayKissBar(boolean display) {
         if (isMinimalisticModeEnabledForFavorites() && !display) {
             mainActivity.favoritesBar.setVisibility(View.GONE);
-        }
-
-        if (!display && isKeyboardOnStartEnabled()) {
-            // Display keyboard
-            mainActivity.showKeyboard();
         }
     }
 
@@ -316,14 +313,21 @@ class ExperienceTweaks extends Forwarder {
                 showStatusBar = statusbarManager.getMethod("expand");
             }
             showStatusBar.invoke(sbservice);
-        } catch (ClassNotFoundException e1) {
-            e1.printStackTrace();
-        } catch (NoSuchMethodException e1) {
-            e1.printStackTrace();
-        } catch (IllegalAccessException e1) {
-            e1.printStackTrace();
-        } catch (InvocationTargetException e1) {
-            e1.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressLint("PrivateApi")
+    @SuppressWarnings("CatchAndPrintStackTrace")
+    private void displayQuickSettings() {
+        try {
+            @SuppressLint("WrongConstant") Object sbservice = mainActivity.getSystemService("statusbar");
+            Class.forName("android.app.StatusBarManager")
+                    .getMethod("expandSettingsPanel")
+                    .invoke(sbservice);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -350,6 +354,14 @@ class ExperienceTweaks extends Forwarder {
      */
     private boolean isKeyboardOnStartEnabled() {
         return prefs.getBoolean("display-keyboard", false);
+    }
+
+    /**
+     * Should the keyboard be displayed?
+     */
+    private boolean shouldShowKeyboard() {
+        boolean isAssistant = mainActivity.getIntent().getAction().equalsIgnoreCase("android.intent.action.ASSIST");
+        return (isAssistant || isKeyboardOnStartEnabled());
     }
 
     /**

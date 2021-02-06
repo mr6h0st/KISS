@@ -33,13 +33,12 @@ import fr.neamar.kiss.dataprovider.AppProvider;
 import fr.neamar.kiss.dataprovider.ContactsProvider;
 import fr.neamar.kiss.dataprovider.IProvider;
 import fr.neamar.kiss.dataprovider.Provider;
-import fr.neamar.kiss.dataprovider.simpleprovider.SearchProvider;
 import fr.neamar.kiss.dataprovider.ShortcutsProvider;
 import fr.neamar.kiss.dataprovider.simpleprovider.CalculatorProvider;
 import fr.neamar.kiss.dataprovider.simpleprovider.PhoneProvider;
+import fr.neamar.kiss.dataprovider.simpleprovider.SearchProvider;
 import fr.neamar.kiss.dataprovider.simpleprovider.SettingsProvider;
 import fr.neamar.kiss.dataprovider.simpleprovider.TagsProvider;
-import fr.neamar.kiss.db.AppRecord;
 import fr.neamar.kiss.db.DBHelper;
 import fr.neamar.kiss.db.ShortcutRecord;
 import fr.neamar.kiss.db.ValuedHistoryRecord;
@@ -104,7 +103,7 @@ public class DataHandler extends BroadcastReceiver
 
         // Some basic providers are defined directly,
         // as we don't need the overhead of a service for them
-        // Those providers don't expose a service connection,
+        // Those providers dong't expose a service connection,
         // and you can't bind / unbind to them dynamically.
         ProviderEntry calculatorEntry = new ProviderEntry();
         calculatorEntry.provider = new CalculatorProvider();
@@ -194,7 +193,7 @@ public class DataHandler extends BroadcastReceiver
             // https://github.com/Neamar/KISS/issues/1154
             Log.w(TAG, "Unable to start service for " + name + ". KISS is probably not in the foreground. Service will automatically be started when KISS gets to the foreground.");
 
-            if(counter > 20) {
+            if (counter > 20) {
                 Log.e(TAG, "Already tried and failed twenty times to start service. Giving up.");
                 return;
             }
@@ -211,7 +210,7 @@ public class DataHandler extends BroadcastReceiver
                     // If yes, we can't start background services yet, so we'll need to wait until we get ACTION_USER_PRESENT
                     KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
                     boolean isPhoneLocked = myKM.inKeyguardRestrictedInputMode();
-                    if(!isPhoneLocked) {
+                    if (!isPhoneLocked) {
                         context.unregisterReceiver(this);
                         final Handler handler = new Handler();
                         // Even when all the stars are aligned,
@@ -363,9 +362,9 @@ public class DataHandler extends BroadcastReceiver
      * May return an empty set if the providers are not done building records,
      * in this case it is probably a good idea to call this function 500ms after
      *
-     * @param context        android context
-     * @param itemCount      max number of items to retrieve, total number may be less (search or calls are not returned for instance)
-     * @param historyMode    Recency vs Frecency vs Frequency vs Adaptive vs Alphabetically
+     * @param context            android context
+     * @param itemCount          max number of items to retrieve, total number may be less (search or calls are not returned for instance)
+     * @param historyMode        Recency vs Frecency vs Frequency vs Adaptive vs Alphabetically
      * @param itemsToExcludeById Items to exclude from history by their id
      * @return pojos in recent history
      */
@@ -389,7 +388,7 @@ public class DataHandler extends BroadcastReceiver
                 continue;
             }
 
-            if(itemsToExcludeById.contains(pojo.id)) {
+            if (itemsToExcludeById.contains(pojo.id)) {
                 continue;
             }
 
@@ -411,7 +410,7 @@ public class DataHandler extends BroadcastReceiver
     /**
      * Query database for item and return its name
      *
-     * @param id      globally unique ID, usually starts with provider scheme, e.g. "app://" or "contact://"
+     * @param id globally unique ID, usually starts with provider scheme, e.g. "app://" or "contact://"
      * @return name of item (i.e. app name)
      */
     public String getItemName(String id) {
@@ -507,6 +506,22 @@ public class DataHandler extends BroadcastReceiver
             excluded.add(context.getPackageName());
         }
         return excluded;
+    }
+
+    /**
+     * Get ids that should be excluded from apps
+     *
+     * @return set of favorite ids
+     */
+    @NonNull
+    public Set<String> getExcludedFavorites() {
+        Set<String> excludedFavorites = new HashSet<>();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        if (prefs.getBoolean("exclude-favorites-apps", false)) {
+            String favApps = prefs.getString("favorite-apps-list", "");
+            excludedFavorites.addAll(Arrays.asList(favApps.split(";")));
+        }
+        return excludedFavorites;
     }
 
     public void addToExcludedFromHistory(AppPojo app) {
@@ -608,16 +623,16 @@ public class DataHandler extends BroadcastReceiver
         PreferenceManager.getDefaultSharedPreferences(context).edit().putStringSet("excluded-apps", newExcluded).apply();
     }
 
-	/**
-	 * Return all applications (including excluded)
-	 *
-	 * @return pojos for all applications
-	 */
-	@Nullable
-	public List<AppPojo> getApplications() {
-		AppProvider appProvider = getAppProvider();
-		return appProvider != null ? appProvider.getAllApps() : null;
-	}
+    /**
+     * Return all applications (including excluded)
+     *
+     * @return pojos for all applications
+     */
+    @Nullable
+    public List<AppPojo> getApplications() {
+        AppProvider appProvider = getAppProvider();
+        return appProvider != null ? appProvider.getAllApps() : null;
+    }
 
     /**
      * Return all applications
@@ -688,7 +703,7 @@ public class DataHandler extends BroadcastReceiver
         List<Pojo> currentFavorites = getFavorites();
         List<String> favAppsList = new ArrayList<>();
 
-        for(Pojo pojo : currentFavorites) {
+        for (Pojo pojo : currentFavorites) {
             favAppsList.add(pojo.getFavoriteId());
         }
 
@@ -724,6 +739,12 @@ public class DataHandler extends BroadcastReceiver
 
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString("favorite-apps-list", favApps + id + ";").apply();
+
+        boolean excludedApps = PreferenceManager.getDefaultSharedPreferences(context).
+                getBoolean("exclude-favorites-apps", false);
+        if (excludedApps) {
+            getAppProvider().reload();
+        }
     }
 
     public void removeFromFavorites(String id) {
@@ -739,6 +760,12 @@ public class DataHandler extends BroadcastReceiver
 
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString("favorite-apps-list", favApps.replace(id + ";", "")).apply();
+
+        boolean excludedApps = PreferenceManager.getDefaultSharedPreferences(context).
+                getBoolean("exclude-favorites-apps", false);
+        if (excludedApps) {
+            getAppProvider().reload();
+        }
     }
 
     @SuppressWarnings("StringSplitter")
@@ -761,6 +788,12 @@ public class DataHandler extends BroadcastReceiver
 
         PreferenceManager.getDefaultSharedPreferences(this.context).edit()
                 .putString("favorite-apps-list", favApps.toString()).apply();
+
+        boolean excludedApps = PreferenceManager.getDefaultSharedPreferences(context).
+                getBoolean("exclude-favorites-apps", false);
+        if (excludedApps) {
+            getAppProvider().reload();
+        }
     }
 
     /**
@@ -769,7 +802,7 @@ public class DataHandler extends BroadcastReceiver
      * @param id pojo.id of item to record
      */
     public void addToHistory(String id) {
-        if(id.isEmpty()) {
+        if (id.isEmpty()) {
             return;
         }
 

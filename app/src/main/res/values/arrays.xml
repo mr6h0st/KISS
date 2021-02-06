@@ -48,7 +48,9 @@
     <string-array name="gestureEntries">
         <item>@string/gesture_do_nothing</item>
         <item>@string/gesture_keyboard</item>
+        <item>@string/gesture_hide_keyboard</item>
         <item>@string/gesture_notifications</item>
+        <item>@string/gesture_quicksettings</item>
         <item>@string/gesture_apps</item>
         <item>@string/gesture_history</item>
         <item>@string/gesture_menu</item>
@@ -56,7 +58,9 @@
     <string-array name="gestureValues" translatable="false">
         <item>do-nothing</item>
         <item>display-keyboard</item>
+        <item>hide-keyboard</item>
         <item>display-notifications</item>
+        <item>display-quicksettings</item>
         <item>display-apps</item>
         <item>display-history</item>
         <item>display-menu</item>
@@ -110,6 +114,8 @@
         <item>disabled</item>
     </string-array>
     <string name="gesture_menu">Display menu</string>
+    <string name="gesture_hide_keyboard">Hide keyboard</string>
+    <string name="gesture_quicksettings">Display quick settings</string>
 
     <!-- Names for DrawableUtils.SHAPE_*    -->
     <string-array name="adaptiveEntries">
